@@ -3,6 +3,7 @@
 #include "USBHIDPendant.h"
 #include "Pendant_Numpad.h"
 #include "Pendant_WHB04B6.h"
+#include "Pendant_PS3.h"
 
 
 // Example used as base for USB HID stuff:
@@ -183,6 +184,12 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
       {
         Serial.printf("Found new WHB04B-6 device\r\n");
         object = new Pendant_WHB04B6(dev_addr, instance);
+      }
+      // PS3 Dualshock Controller
+      if(itf_protocol == HID_ITF_PROTOCOL_NONE && vid == 0x054c && pid == 0x0268)
+      {
+        Serial.printf("Found new PS3 device\r\n");
+        object = new Pendant_PS3(dev_addr, instance);
       }
       // store object and done
       devices[i].object = object;

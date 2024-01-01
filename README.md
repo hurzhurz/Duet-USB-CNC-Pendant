@@ -33,6 +33,12 @@ Other numpads should work as well, just change USB VID and PID in main1.cpp / tu
 
 Implementation is based on information from https://github.com/LinuxCNC/linuxcnc/tree/master/src/hal/user_comps/xhc-whb04b-6
 
+### PS3 DualShock 3 Controller
+* Jogging with directional buttons for X/Y axes, left and right shoulder buttons for Z axis.
+* Trigger buttons to change step size (off/0.01mm/0.1mm/1mm/10mm).
+* Current step size is indicated by the controller number indicator LEDs (1=0.01mm, ... , 4=10mm).
+* Other buttons simply try executing macros on the Duet.
+
 ### Other
 Implementing other USB HID devices can be done by adding a adequate Pendant class and extending main1.cpp / tuh_hid_mount_cb().
 
