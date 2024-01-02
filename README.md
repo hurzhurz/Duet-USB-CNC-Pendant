@@ -22,6 +22,7 @@ Implementation is limited so far, see functions below.
 * Keys in the top row is used to set step size (off/0.1mm/1mm/10mm).
 * Other keys try to executing a macro on the Duet.
 * On any key press, the Numlock LED is toggled as feedback
+* [Experimental Continuous Mode](doc/ContinuousMode.md)
 
 Other numpads should work as well, just change USB VID and PID in main1.cpp / tuh_hid_mount_cb().
 
@@ -38,6 +39,7 @@ Implementation is based on information from https://github.com/LinuxCNC/linuxcnc
 * Trigger buttons to change step size (off/0.01mm/0.1mm/1mm/10mm).
 * Current step size is indicated by the controller number indicator LEDs (1=0.01mm, ... , 4=10mm).
 * Other buttons simply try executing macros on the Duet.
+* [Experimental Continuous Mode](doc/ContinuousMode.md)
 
 ### Other
 Implementing other USB HID devices can be done by adding a adequate Pendant class and extending main1.cpp / tuh_hid_mount_cb().

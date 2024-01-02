@@ -31,11 +31,25 @@ public:
   void toogle_numlockled();
   void set_numlockled(bool state);
 private:
+  void handle_continuous();
+  void stop_continuous();
   void on_key_press(uint8_t keycode) override;
   void on_key_release(uint8_t keycode) override;
-  float multiplier=0.0;
+  uint8_t speed_step = 0;
+  bool continuous_mode = false;
+  uint8_t continuous_axis = 0;
+  bool continuous_direction;
   uint8_t leds=0;
 };
+
+const float NumpadStepSizes[] = {0.1, 1.0, 10.0};
+const float NumpadContinuousMultipliers[] = {0.25, 0.5, 1.0};
+const char NumpadAxisLetters[] = {'X','Y','Z'};
+
+const uint16_t NumpadContinuousFeeds[] = {6000, 6000, 600};
+
+const char NumpadContinuousRunCommand[] = "M98 P\"pendant-continuous-run.g\" A\"%c\" F%u D%u";
+const char NumpadContinuousStopCommand[] = "M98 P\"pendant-continuous-stop.g\"";
 
 const char* const NumpadMoveCommands[] =
 {
@@ -62,8 +76,8 @@ const char* const NumpadButtonCommands[] =
   "M98 P\"Numpad/7_home.g\"", // Button 7_HOME
   "", // Button 8_UP
   "M98 P\"Numpad/9_pgup.g\"", // Button 9_PGUP
-  "M98 P\"Numpad/0_ins.g\"", // Button 0_INS
-  "M98 P\"Numpad/dort_del.g\""  // Button DOT_DEL
+  "", // Button 0_INS
+  ""  // Button DOT_DEL
 };
 
 #endif

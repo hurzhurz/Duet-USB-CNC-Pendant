@@ -1,0 +1,1 @@
+set global.pendant_continuous_ttl=0

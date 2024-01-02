@@ -21,6 +21,10 @@
 #define BUTTON_SQUARE 0x0f
 #define BUTTON_PS 0x10
 
+#define STICK_HIST_ON 60
+#define STICK_HIST_OFF 30
+#define STICK_MID 127
+
 
 // https://github.com/felis/USB_Host_Shield_2.0/blob/master/PS3Enums.h
 /** Report buffer for all PS3 commands */
@@ -51,10 +55,23 @@ private:
   void on_key_press(uint8_t keycode) override;
   void on_key_release(uint8_t keycode) override;
   void set_leds(uint8_t leds);
+  void handle_continuous();
+  void stop_continuous();
   uint32_t pressed_buttons=0;
   uint8_t step=0;
   uint8_t write_buffer[PS3_REPORT_BUFFER_SIZE];
+  uint8_t continuous_axis = 0;
+  bool continuous_direction;
 };
+
+const float PS3StepSizes[] = {0.01, 0.1, 1.0, 10.0};
+const float PS3ContinuousMultipliers[] = {0.25, 0.5, 0.75, 1.0};
+const char PS3AxisLetters[] = {'X','Y','Z'};
+
+const uint16_t PS3ContinuousFeeds[] = {6000, 6000, 600};
+
+const char PS3ContinuousRunCommand[] = "M98 P\"pendant-continuous-run.g\" A\"%c\" F%u D%u";
+const char PS3ContinuousStopCommand[] = "M98 P\"pendant-continuous-stop.g\"";
 
 const char* const PS3MoveCommands[] =
 {
