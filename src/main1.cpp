@@ -172,10 +172,10 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
       USBHIDPendant * object = 0;
       // check if known device type and create matching object
       //
-      // LogiLink ID0120 Numpad
-      if(itf_protocol == HID_ITF_PROTOCOL_KEYBOARD && vid == 0x062a && pid == 0x4101)
+      // Keyboard / Numpad
+      if(itf_protocol == HID_ITF_PROTOCOL_KEYBOARD)
       {
-        Serial.printf("Found new Numpad device\r\n");
+        Serial.printf("Found new Keyboard/Numpad device\r\n");
         object = new Pendant_Numpad(dev_addr, instance);
       }
       // WHB04B-6 Wireless CNC Pendant

@@ -17,9 +17,10 @@ Implementation is limited so far, see functions below.
 
 ## Supported Devices
 
-### LogiLink ID0120 Numpad
+###  Keyboard / Numpad
+* **Key mapping is made for the LogiLink ID0120 Numpad**, but other numpads or keyboards can be used, too.
 * Arrow keys are used for jogging X/Y axes, +/- for Z axis as single step per key press.
-* Keys in the top row is used to set step size (off/0.1mm/1mm/10mm).
+* Keys in the top row (num, /, *, backspace) is used to set step size (off/0.1mm/1mm/10mm).
 * Other keys try to executing a macro on the Duet.
 * On any key press, the Numlock LED is toggled as feedback
 
