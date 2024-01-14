@@ -28,8 +28,7 @@ Other numpads should work as well, just change USB VID and PID in main1.cpp / tu
 
 ### WHB04B-6 Wireless CNC Pendant
 * Jogging with wheel with selected axis and step size (0.001mm/.../1mm).
-* Changing jogging feed rate with Feed+/- buttons
-* Display shows axis coordinates, spindle speed, jogging feed rate
+* Display shows axis coordinates, spindle speed, speed factor
 * Most buttons simply try executing macros on the Duet.
 
 Implementation is based on information from https://github.com/LinuxCNC/linuxcnc/tree/master/src/hal/user_comps/xhc-whb04b-6

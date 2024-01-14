@@ -42,7 +42,6 @@ private:
   void double_to_report_bytes(double val, uint8_t idx_intval_lower, uint8_t idx_intval_upper, uint8_t idx_frac_lower, uint8_t idx_frac_upper);
   void uint16_to_report_bytes(uint16_t val, uint8_t idx_lower, uint8_t idx_upper);
   double axis_coordinates[6];
-  uint16_t axis_feed_rates[6];
   uint8_t display_report_data[24];
   uint8_t selected_axis, display_axis_offset, selected_feed, mode;
   unsigned long last_display_report;
@@ -54,31 +53,12 @@ private:
 
 const char* const WHB04B6MoveCommands[] =
 {
-  "G91 G1 F%u X%.3f",     // X axis
-  "G91 G1 F%u Y%.3f",     // Y axis
-  "G91 G1 F%u Z%.3f",     // Z axis
-  "G91 G1 F%u U%.3f",     // axis 4
-  "G91 G1 F%u V%.3f",     // axis 5
-  "G91 G1 F%u W%.3f"      // axis 6
-};
-
-const uint16_t WHB04B6FeedRateMax[] =
-{
-  10000,     // X axis
-  10000,     // Y axis
-  1000,      // Z axis
-  10000,     // axis 4
-  10000,     // axis 5
-  10000      // axis 6
-};
-const uint16_t WHB04B6FeedRateStep[] =
-{
-  500,     // X axis
-  500,     // Y axis
-  50,      // Z axis
-  500,     // axis 4
-  500,     // axis 5
-  500      // axis 6
+  "G91 G1 F6000 X",     // X axis
+  "G91 G1 F6000 Y",     // Y axis
+  "G91 G1 F600 Z",      // Z axis
+  "G91 G1 F6000 U",      // axis 4
+  "G91 G1 F6000 V",      // axis 5
+  "G91 G1 F6000 W",      // axis 6
 };
 
 const char* const WHB04B6ButtonCommands[] =
@@ -106,8 +86,8 @@ const char* const WHB04B6ButtonCommandsFN[] =
   "", // Button RESET
   "", // Button STOP
   "", // Button STARTPAUSE
-  "", // Button M1_FEEDPLUS
-  "", // Button M2_FEEDMINUS
+  "M98 P\"WHB04B6/feed-plus.g\"", // Button M1_FEEDPLUS
+  "M98 P\"WHB04B6/feed-minus.g\"", // Button M2_FEEDMINUS
   "M98 P\"WHB04B6/spindle-plus.g\"", // Button M3_SPINDLEPLUS
   "M98 P\"WHB04B6/spindle-minus.g\"", // Button M4_SPINDLEMINUS
   "M98 P\"WHB04B6/m-home.g\"", // Button M5_MHOME
