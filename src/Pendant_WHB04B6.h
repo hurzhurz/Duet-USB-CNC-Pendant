@@ -7,7 +7,9 @@
 #include "USBHIDPendant.h"
 
 #define REPORT_INTERVAL 2000
-#define CMD_INTERVAL 20
+#define CMD_STEP_INTERVAL 100
+#define CMD_CONTINUOUS_CHECK_INTERVAL 100
+#define CMD_CONTINUOUS_UPDATE_INTERVAL 500
 
 #define SEED 0xff
 
@@ -30,10 +32,33 @@
 #define KEYCODE_STEP 0x0f
 #define KEYCODE_M10 0x10
 
+#define AXISSELCTOR_OFF 0x06
+#define AXISSELCTOR_X 0x11
+#define AXISSELCTOR_Y 0x12
+#define AXISSELCTOR_Z 0x13
+#define AXISSELCTOR_A 0x14
+#define AXISSELCTOR_B 0x15
+#define AXISSELCTOR_C 0x16
+
+#define FEEDSELECTOR_2P_0001 0x0D
+#define FEEDSELECTOR_5P_001 0x0E
+#define FEEDSELECTOR_10P_01 0x0F
+#define FEEDSELECTOR_30P_1 0x10
+#define FEEDSELECTOR_60P 0x1A
+#define FEEDSELECTOR_100P 0x1B
+#define FEEDSELECTOR_LEAD1 0x9B
+#define FEEDSELECTOR_LEAD2 0x1C
+#define FEEDSELECTOR_STEP_STEPS 4
+#define FEEDSELECTOR_CONT_STEPS 6
+
+#define FEEDSELECTOR_TO_LINEAR(x) ((x>=FEEDSELECTOR_2P_0001 && x<=FEEDSELECTOR_30P_1)?(x-FEEDSELECTOR_2P_0001+1):((x>=FEEDSELECTOR_60P&&x<=FEEDSELECTOR_100P)?(x-FEEDSELECTOR_60P+5):0))
+#define FEEDSELECTOR_IS_LEAD(x) (x==FEEDSELECTOR_LEAD1 || x==FEEDSELECTOR_LEAD2)
+
 class Pendant_WHB04B6: public USBHIDPendant
 {
 public:
   Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance);
+  ~Pendant_WHB04B6();
   void report_received(uint8_t const *report, uint16_t len) override;
   void duetstatus_received(DuetStatus * duetstatus) override;
   void loop() override;
@@ -44,13 +69,30 @@ private:
   double axis_coordinates[6];
   uint16_t axis_feed_rates[6];
   uint8_t display_report_data[24];
-  uint8_t selected_axis, display_axis_offset, selected_feed, mode;
+  uint8_t selected_axis, display_axis_offset, selected_feed;
   unsigned long last_display_report;
   int16_t jog;
   void on_key_press(uint8_t keycode) override;
   void on_key_release(uint8_t keycode) override;
+  void handle_continuous_check();
+  void handle_continuous_update();
+  void stop_continuous();
+  uint8_t continuous_axis = 0;
+  bool continuous_direction;
+  unsigned long last_continuous_check;
+  unsigned long last_continuous_update;
+  enum class Mode : uint8_t
+  {
+    Step = 0,
+    Continuous
+  } mode = Mode::Continuous;
 };
 
+const uint16_t WHB04B6ContinuousFeeds[] = {6000, 6000, 600, 6000, 6000, 6000};
+const float WHB04B6StepSizes[] = {0.001, 0.01, 0.1, 1.0};
+const float WHB04B6ContinuousMultipliers[] = {0.02, 0.05, 0.10, 0.30, 0.60, 1.00};
+const char WHB04B6AxisLetters[] = {'X','Y','Z','U','V','W'};
+const uint8_t WHB04B6AxisCount = 6;
 
 const char* const WHB04B6MoveCommands[] =
 {
@@ -61,6 +103,9 @@ const char* const WHB04B6MoveCommands[] =
   "G91 G1 F%u V%.3f",     // axis 5
   "G91 G1 F%u W%.3f"      // axis 6
 };
+
+const char WHB04B6ContinuousRunCommand[] = "M98 P\"pendant-continuous-run.g\" A\"%c\" F%u D%u";
+const char WHB04B6ContinuousStopCommand[] = "M98 P\"pendant-continuous-stop.g\"";
 
 const uint16_t WHB04B6FeedRateMax[] =
 {

@@ -15,8 +15,7 @@ Pendant_WHB04B6::Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance):
     jog(0),
     selected_axis(0),
     display_axis_offset(0),
-    selected_feed(0),
-    mode(0x01)
+    selected_feed(0)
 
 {
     this->send_display_report();
@@ -30,6 +29,10 @@ Pendant_WHB04B6::Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance):
     axis_coordinates[5]=5564.1334465;
     */
 };
+Pendant_WHB04B6::~Pendant_WHB04B6()
+{
+    this->stop_continuous();
+}
 void Pendant_WHB04B6::report_received(uint8_t const *report, uint16_t len)
 {
     if(len != 8 || report[0] != 0x04)
@@ -55,16 +58,20 @@ void Pendant_WHB04B6::report_received(uint8_t const *report, uint16_t len)
     {
         this->selected_feed = feed;
         this->jog = 0;
+        this->stop_continuous();
     }
 
     if(this->selected_axis != axis)
     {
         this->selected_axis = axis;
         this->display_axis_offset = (axis>0x13)?3:0;
-        if(axis>0x10 && axis<0x17)
+        if(axis>=AXISSELCTOR_X && axis<=AXISSELCTOR_C)
+        {
             this->uint16_to_report_bytes(this->axis_feed_rates[axis-0x11], 16,17);
+        }
         this->jog = 0;
         display_update_needed = true;
+        this->stop_continuous();
     }
 
     this->process_keycodes(&keycode1, 2);
@@ -109,7 +116,9 @@ void Pendant_WHB04B6::send_display_report()
     this->double_to_report_bytes(axis_coordinates[2+this->display_axis_offset],12,13,14,15);
 
     // update mode indicator in display report data (mode not used yet!)
-    this->display_report_data[R_IDX(3)] = (this->display_report_data[R_IDX(3)]&(~0x3)) | this->mode;
+    uint8_t mode_bits = 0;
+    if(this->mode == Mode::Step) mode_bits=0x01;
+    this->display_report_data[R_IDX(3)] = (this->display_report_data[R_IDX(3)]&(~0x3)) | mode_bits;
 
     // send display report data to device
     this->set_report(0x06, HID_REPORT_TYPE_FEATURE, &this->display_report_data, 24);
@@ -119,25 +128,31 @@ void Pendant_WHB04B6::loop()
 { 
   static unsigned long last_cmd_check = millis();
   unsigned long now = millis();
-  if( (now-last_cmd_check) > CMD_INTERVAL)
+  if( (now-last_cmd_check) > CMD_STEP_INTERVAL)
   {
     last_cmd_check = now;
-    if(this->jog != 0 && this->selected_axis>0x10 && this->selected_axis<0x17 && this->selected_feed>=0x0d && this->selected_feed<=0x10)
+    uint8_t feed = FEEDSELECTOR_TO_LINEAR(this->selected_feed);
+    if(this->mode == Mode::Step && this->jog != 0 && this->selected_axis>=AXISSELCTOR_X && this->selected_axis<=AXISSELCTOR_C && feed && feed<=FEEDSELECTOR_STEP_STEPS)
     {
-        float multiplier = 1.0;
-        uint8_t axis = this->selected_axis-0x11;
-        if(this->selected_feed == 0x0d)
-            multiplier = 0.001;
-        else if(this->selected_feed == 0x0e)
-            multiplier = 0.01;
-        else if(this->selected_feed == 0x0f)
-            multiplier = 0.1;
+        float step_size = WHB04B6StepSizes[feed-1];
+        uint8_t axis = this->selected_axis-AXISSELCTOR_X;
         char cmd[100];
-        sprintf(cmd, WHB04B6MoveCommands[axis], this->axis_feed_rates[axis], this->jog*multiplier);
+        sprintf(cmd, WHB04B6MoveCommands[axis], this->axis_feed_rates[axis], this->jog*step_size);
         String * cmdstr = new String(cmd);
         this->send_command(cmdstr);
+        this->jog = 0;
     }
-    this->jog = 0;
+  }
+  if( this->mode == Mode::Continuous)
+  {
+    if((now-last_continuous_check) > CMD_CONTINUOUS_CHECK_INTERVAL)
+    {
+        this->handle_continuous_check();
+    }
+    if((now-last_continuous_update) > CMD_CONTINUOUS_UPDATE_INTERVAL)
+    {
+        this->handle_continuous_update();
+    }
   }
 
   if( (now-this->last_display_report) > REPORT_INTERVAL)
@@ -150,6 +165,19 @@ void Pendant_WHB04B6::on_key_press(uint8_t keycode)
 {
     Serial.print("Key Press: ");
     Serial.println(keycode, HEX);
+    // mode
+    if(keycode==KEYCODE_STEP)
+    {
+        this->jog = 0;
+        this->stop_continuous();
+        this->mode = Mode::Step;
+    }
+    if(keycode==KEYCODE_CONTINUOUS)
+    {
+        this->jog = 0;
+        this->mode = Mode::Continuous;
+        this->last_continuous_check = millis();
+    }
     // increase or decrese feed rate
     if((keycode==KEYCODE_M1_FEEDPLUS || keycode==KEYCODE_M2_FEEDMINUS) && this->is_key_pressed(KEYCODE_FN) && this->selected_axis>0x10 && this->selected_axis<0x17)
     {
@@ -171,7 +199,7 @@ void Pendant_WHB04B6::on_key_press(uint8_t keycode)
         this->uint16_to_report_bytes(this->axis_feed_rates[axis], 16,17);
     }
     // Send ButtonCommands 
-    if(keycode<=0x10)
+    if(keycode<=KEYCODE_M10)
     {
         const char* cmd;
         if(this->is_key_pressed(KEYCODE_FN))
@@ -199,4 +227,44 @@ void Pendant_WHB04B6::duetstatus_received(DuetStatus * duetstatus)
     this->uint16_to_report_bytes(duetstatus->spindle_speed, 18,19);
 
     this->send_display_report();
+}
+
+void Pendant_WHB04B6::handle_continuous_check()
+{
+    this->last_continuous_check = millis();
+    if(this->jog == 0)
+    {
+        this->stop_continuous();
+    }
+    else
+    {
+        bool direction = this->jog > 0;
+        if(this->continuous_axis == 0 || this->continuous_direction!=direction)
+        {
+            this->continuous_axis = this->selected_axis-AXISSELCTOR_X+1;
+            this->continuous_direction = direction;
+            this->handle_continuous_update();
+        }
+    }
+    this->jog = 0;
+}
+void Pendant_WHB04B6::handle_continuous_update()
+{
+    this->last_continuous_update = millis();
+    uint8_t feed = FEEDSELECTOR_TO_LINEAR(this->selected_feed);
+    if(this->continuous_axis && this->continuous_axis<=WHB04B6AxisCount && feed && feed<=FEEDSELECTOR_CONT_STEPS)
+    {
+        char cmd[100];
+        sprintf(cmd, WHB04B6ContinuousRunCommand, WHB04B6AxisLetters[this->continuous_axis-1], (uint16_t)(WHB04B6ContinuousFeeds[this->continuous_axis-1]*WHB04B6ContinuousMultipliers[feed-1]) , this->continuous_direction?1:0 );
+        String * cmdstr = new String(cmd);
+        this->send_command(cmdstr);
+    }
+}
+void Pendant_WHB04B6::stop_continuous()
+{
+  if(this->continuous_axis)
+  {
+    this->send_command(new String(WHB04B6ContinuousStopCommand));
+    this->continuous_axis = 0;
+  }
 }

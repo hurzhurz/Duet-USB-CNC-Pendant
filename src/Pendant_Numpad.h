@@ -45,6 +45,7 @@ private:
 const float NumpadStepSizes[] = {0.1, 1.0, 10.0};
 const float NumpadContinuousMultipliers[] = {0.25, 0.5, 1.0};
 const char NumpadAxisLetters[] = {'X','Y','Z'};
+const uint8_t NumpadAxisCount = 3;
 
 const uint16_t NumpadContinuousFeeds[] = {6000, 6000, 600};
 

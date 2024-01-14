@@ -13,7 +13,7 @@ void Pendant_Numpad::stop_continuous()
 }
 void Pendant_Numpad::handle_continuous()
 {
-    if(this->continuous_axis && this->continuous_axis<=3 && this->speed_step)
+    if(this->continuous_axis && this->continuous_axis<=NumpadAxisCount && this->speed_step)
     {
         char cmd[100];
         sprintf(cmd, NumpadContinuousRunCommand, NumpadAxisLetters[this->continuous_axis-1], (uint16_t)(NumpadContinuousFeeds[this->continuous_axis-1]*NumpadContinuousMultipliers[this->speed_step-1]) , this->continuous_direction?1:0 );

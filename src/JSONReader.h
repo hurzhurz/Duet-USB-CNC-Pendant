@@ -19,8 +19,7 @@ private:
     waitingForStart = 0,
     waitingForNewLine,
     reading
-  };
-  State state = State::waitingForStart;
+  } state = State::waitingForStart;
   bool json_ready = false;
 };
 

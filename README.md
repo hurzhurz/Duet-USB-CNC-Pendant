@@ -32,6 +32,7 @@ Other numpads should work as well, just change USB VID and PID in main1.cpp / tu
 * Changing jogging feed rate with Feed+/- buttons
 * Display shows axis coordinates, spindle speed, jogging feed rate
 * Most buttons simply try executing macros on the Duet.
+* [Experimental Continuous Mode](doc/ContinuousMode.md)
 
 Implementation is based on information from https://github.com/LinuxCNC/linuxcnc/tree/master/src/hal/user_comps/xhc-whb04b-6
 
