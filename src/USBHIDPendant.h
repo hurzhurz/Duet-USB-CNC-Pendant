@@ -16,7 +16,7 @@ class USBHIDPendant
 {
 public:
   USBHIDPendant(uint8_t dev_addr, uint8_t instance): kb_dev_addr(dev_addr), kb_instance(instance) {};
-  ~USBHIDPendant();
+  virtual ~USBHIDPendant();
   virtual void report_received(uint8_t const *report, uint16_t len){};
   virtual void duetstatus_received(DuetStatus * duetstatus){};
   virtual void loop(){};

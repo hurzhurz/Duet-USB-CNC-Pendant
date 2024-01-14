@@ -54,12 +54,12 @@ private:
 
 const char* const WHB04B6MoveCommands[] =
 {
-  "G91 G0 F%u X%.3f",     // X axis
-  "G91 G0 F%u Y%.3f",     // Y axis
-  "G91 G0 F%u Z%.3f",     // Z axis
-  "G91 G0 F%u U%.3f",     // axis 4
-  "G91 G0 F%u V%.3f",     // axis 5
-  "G91 G0 F%u W%.3f"      // axis 6
+  "G91 G1 F%u X%.3f",     // X axis
+  "G91 G1 F%u Y%.3f",     // Y axis
+  "G91 G1 F%u Z%.3f",     // Z axis
+  "G91 G1 F%u U%.3f",     // axis 4
+  "G91 G1 F%u V%.3f",     // axis 5
+  "G91 G1 F%u W%.3f"      // axis 6
 };
 
 const uint16_t WHB04B6FeedRateMax[] =

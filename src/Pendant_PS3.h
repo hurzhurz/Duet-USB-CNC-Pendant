@@ -75,9 +75,9 @@ const char PS3ContinuousStopCommand[] = "M98 P\"pendant-continuous-stop.g\"";
 
 const char* const PS3MoveCommands[] =
 {
-  "G91 G0 F6000 X",     // X axis
-  "G91 G0 F6000 Y",     // Y axis
-  "G91 G0 F600 Z",      // Z axis
+  "G91 G1 F6000 X",     // X axis
+  "G91 G1 F6000 Y",     // Y axis
+  "G91 G1 F600 Z",      // Z axis
 };
 
 const char* const PS3ButtonCommands[] =
