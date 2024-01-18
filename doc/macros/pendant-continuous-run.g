@@ -1,4 +1,4 @@
-if exists(param.A) && exists(param.F) && exists(param.D)
+if {exists(param.A)} && {exists(param.F)} && {exists(param.D)}
     set global.pendant_continuous_axis = {param.A}
     set global.pendant_continuous_feed = {param.F}
     set global.pendant_continuous_forward = {param.D==1}
