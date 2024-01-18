@@ -63,7 +63,7 @@ void Pendant_WHB04B6::report_received(uint8_t const *report, uint16_t len)
     if(this->selected_axis != axis)
     {
         this->selected_axis = axis;
-        this->display_axis_offset = (axis>0x13)?3:0;
+        this->display_axis_offset = (axis>AXISSELCTOR_Z)?3:0;
         this->jog = 0;
         display_update_needed = true;
         this->stop_continuous();
