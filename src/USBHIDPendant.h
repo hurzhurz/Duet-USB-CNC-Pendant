@@ -10,6 +10,7 @@ struct DuetStatus
 {
   double axis_userPosition[6];
   uint16_t spindle_speed;
+  double speedFactor;
 };
 
 class USBHIDPendant

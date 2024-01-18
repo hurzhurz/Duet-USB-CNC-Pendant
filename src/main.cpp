@@ -7,6 +7,15 @@
 #include "JSONReader.h"
 #include "USBHIDPendant.h"
 
+#define DUET_RESPONSEKEY_SPEEDFACTOR "move.speedFactor"
+#define DUET_RESPONSEKEY_SPINDLESPEED "spindles[0].current"
+#define DUET_RESPONSEKEY_POSITION "move.axes[].userPosition"
+
+#define DUET_STATUS_REQUEST_CMD_POSITION "M409 K\"move.axes[].userPosition\"\n"
+#define DUET_STATUS_REQUEST_CMD_OTHER "M409 K\"move.speedFactor\" M409 K\"spindles[0].current\"\n"
+#define DUET_STATUS_REQUEST_INTERVAL_POSITION 500
+#define DUET_STATUS_REQUEST_INTERVAL_OTHER 1000
+
 #define DuetSerial Serial1 // UART0
 #define DuetSerialTXPin 12
 #define DuetSerialRXPin 13
@@ -17,21 +26,22 @@
 #define PanelDueSerialRXPin 5
 #define PanelDueSerialBaud 57600
 
-#define DUET_QUERY_INTERVAL 1000
+
 
 GCodeSerial output(DuetSerial);
 //GCodeSerial output((HardwareSerial&)Serial);
 PassThrough passThrough;
-JSONReader jsonReader;
+
+JSONReader jsonReader(200, "{\"key\":\"", "{\"key\":\"\""); // expect non empty key, want '{"key":"' but not '{"key":""'
 StaticJsonDocument<1000> jsondoc;
-StaticJsonDocument<200> jsonfilter;
+StaticJsonDocument<100> jsonfilter;
+DuetStatus duetstatus = {};
 
 void setup()
 {
   Serial.begin(115200); // USB Serial for debug output
-
-  jsonfilter["result"]["move"]["axes"] = true;
-  jsonfilter["result"]["spindles"][0]["current"] = true;
+  jsonfilter["key"] = true;
+  jsonfilter["result"] = true;
 
 
   DuetSerial.setTX(DuetSerialTXPin);
@@ -97,19 +107,23 @@ void loop()
   }
 
   // request status from Duet
-  static unsigned long last_duet_query = millis();
   unsigned long now = millis();
-  if((now-last_duet_query) > DUET_QUERY_INTERVAL)
+  static unsigned long last_duet_status_request_position = now;
+  if((now-last_duet_status_request_position) > DUET_STATUS_REQUEST_INTERVAL_POSITION)
   {
-    last_duet_query = now;
-    output.print("M409 F\"d99f\"\n");
+    last_duet_status_request_position = now;
+    output.print(DUET_STATUS_REQUEST_CMD_POSITION);
   }
-
-  // check if complete JSON status message from Duet is ready in buffer
+  static unsigned long last_duet_status_request_other = now;
+  if((now-last_duet_status_request_other) > DUET_STATUS_REQUEST_INTERVAL_OTHER)
+  {
+    last_duet_status_request_other = now;
+    output.print(DUET_STATUS_REQUEST_CMD_OTHER);
+  }
   if(jsonReader.isReady())
   {
     char *jsonbuffer = jsonReader.getBuffer();
-    Serial.println("Got complete JSON message");
+    Serial.print("Got complete JSON message: ");
 
     // try to parse JSON
     DeserializationError error = deserializeJson(jsondoc, jsonbuffer, DeserializationOption::Filter(jsonfilter));
@@ -122,14 +136,25 @@ void loop()
     }
     else
     {
-        // extract selected data from JSON message and forward to USB routine on other core
-        DuetStatus * duetstatus = new DuetStatus;
-        for(uint8_t i=0;i<6;i++)
-          duetstatus->axis_userPosition[i] = (double)jsondoc["result"]["move"]["axes"][i]["userPosition"];
-          duetstatus->spindle_speed = (uint16_t)jsondoc["result"]["spindles"][0]["current"];
-        rp2040.fifo.push_nb((uint32_t)duetstatus);
+        Serial.println((const char*)jsondoc["key"]);
+        // extract selected data from JSON message
+        const char* key = jsondoc["key"];
+        if(strcmp(key, DUET_RESPONSEKEY_SPEEDFACTOR) == 0)
+        {
+          duetstatus.speedFactor = (double)jsondoc["result"];
+        }
+        if(strcmp(key, DUET_RESPONSEKEY_SPINDLESPEED) == 0)
+        {
+          duetstatus.spindle_speed = (uint16_t)jsondoc["result"];
+        }
+        if(strcmp(key, DUET_RESPONSEKEY_POSITION) == 0)
+        {
+          for(uint8_t i=0;i<6;i++)
+            duetstatus.axis_userPosition[i] = (double)jsondoc["result"][i];
+          // forward current status to USB routine on other core
+          rp2040.fifo.push_nb((uint32_t)new DuetStatus(duetstatus));
+        }
     }
-    
   }
 
 }

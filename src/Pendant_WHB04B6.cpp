@@ -11,7 +11,6 @@ Pendant_WHB04B6::Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance):
     display_report_data{ 0x06, 0xfe, 0xfd, SEED, 0x81, 0x00, 0x00, 0x00,
                           0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                           0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-    axis_feed_rates{6000, 6000, 600, 6000, 6000, 6000},
     jog(0),
     selected_axis(0),
     display_axis_offset(0),
@@ -65,10 +64,6 @@ void Pendant_WHB04B6::report_received(uint8_t const *report, uint16_t len)
     {
         this->selected_axis = axis;
         this->display_axis_offset = (axis>0x13)?3:0;
-        if(axis>=AXISSELCTOR_X && axis<=AXISSELCTOR_C)
-        {
-            this->uint16_to_report_bytes(this->axis_feed_rates[axis-0x11], 16,17);
-        }
         this->jog = 0;
         display_update_needed = true;
         this->stop_continuous();
@@ -136,10 +131,9 @@ void Pendant_WHB04B6::loop()
     {
         float step_size = WHB04B6StepSizes[feed-1];
         uint8_t axis = this->selected_axis-AXISSELCTOR_X;
-        char cmd[100];
-        sprintf(cmd, WHB04B6MoveCommands[axis], this->axis_feed_rates[axis], this->jog*step_size);
-        String * cmdstr = new String(cmd);
-        this->send_command(cmdstr);
+        String * cmd = new String(WHB04B6MoveCommands[axis]);
+        cmd->concat(this->jog*step_size);
+        this->send_command(cmd);
         this->jog = 0;
     }
   }
@@ -178,26 +172,6 @@ void Pendant_WHB04B6::on_key_press(uint8_t keycode)
         this->mode = Mode::Continuous;
         this->last_continuous_check = millis();
     }
-    // increase or decrese feed rate
-    if((keycode==KEYCODE_M1_FEEDPLUS || keycode==KEYCODE_M2_FEEDMINUS) && this->is_key_pressed(KEYCODE_FN) && this->selected_axis>0x10 && this->selected_axis<0x17)
-    {
-        uint8_t axis = this->selected_axis-0x11;
-        if(keycode==KEYCODE_M1_FEEDPLUS)
-        {
-            this->axis_feed_rates[axis]+=WHB04B6FeedRateStep[axis];
-            if(this->axis_feed_rates[axis]>WHB04B6FeedRateMax[axis])
-                this->axis_feed_rates[axis]=WHB04B6FeedRateMax[axis];
-        }
-        else
-        {
-            if(this->axis_feed_rates[axis]>WHB04B6FeedRateStep[axis])
-                this->axis_feed_rates[axis]-=WHB04B6FeedRateStep[axis];
-            else
-                this->axis_feed_rates[axis]=0;
-        }
-        // update feed rate in display report data
-        this->uint16_to_report_bytes(this->axis_feed_rates[axis], 16,17);
-    }
     // Send ButtonCommands 
     if(keycode<=KEYCODE_M10)
     {
@@ -225,6 +199,7 @@ void Pendant_WHB04B6::duetstatus_received(DuetStatus * duetstatus)
         this->axis_coordinates[i] = duetstatus->axis_userPosition[i];
 
     this->uint16_to_report_bytes(duetstatus->spindle_speed, 18,19);
+    this->uint16_to_report_bytes((uint16_t)(duetstatus->speedFactor*100), 16,17);
 
     this->send_display_report();
 }
