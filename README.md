@@ -56,12 +56,12 @@ Implementing other USB HID devices can be done by adding a adequate Pendant clas
 | GND      | GND          |                     |
 
 ### Serial to Duet
-| RPi Pico           | Duet 2 | Duet 3  | Note      |
-|--------------------|--------|---------|-----------|
-| GPIO 12 (UART0 TX) | URXD0  | io0.in  |           |
-| GPIO 13 (UART0 RX) | UTXD0  | io0.out |           |
-| VSYS               | 5V_EXT | +5V     | via Diode |
-| GND                | GND    | GND     |           |
+| RPi Pico           | Duet 2 | Duet 3  | Note                    |
+|--------------------|--------|---------|-------------------------|
+| GPIO 12 (UART0 TX) | URXD0  | io0.in  |                         |
+| GPIO 13 (UART0 RX) | UTXD0  | io0.out |                         |
+| VSYS               | 5V_EXT | +5V     | via Diode (e.g. 1N5819) |
+| GND                | GND    | GND     |                         |
 
 ### PanelDue Serial Passthrough (optional)
 | PanelDue | RPi Pico          | Duet         |
