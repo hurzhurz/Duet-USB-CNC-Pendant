@@ -19,28 +19,26 @@ Implementation is limited so far, see functions below.
 
 ###  Keyboard / Numpad
 * **Key mapping is made for the LogiLink ID0120 Numpad**, but other numpads or keyboards can be used, too.
-* Arrow keys are used for jogging X/Y axes, +/- for Z axis as single step per key press.
+* Arrow keys are used for jogging X/Y axes, +/- for Z axis:
+  * as single step per key press (in step mode, enabled via 0/INS key)
+  * as continuous movement (via [special continuous mode](doc/ContinuousMode.md), enabled via ./DEL key)
 * Keys in the top row (num, /, *, backspace) is used to set step size (off/0.1mm/1mm/10mm).
-* Other keys try to executing a macro on the Duet.
+* Other keys try to execute a macro on the Duet.
 * On any key press, the Numlock LED is toggled as feedback
-* [Experimental Continuous Mode](doc/ContinuousMode.md)
-
-Other numpads should work as well, just change USB VID and PID in main1.cpp / tuh_hid_mount_cb().
 
 ### WHB04B-6 Wireless CNC Pendant
-* Jogging with wheel with selected axis and step size (0.001mm/.../1mm).
+* Jogging with wheel with selected axis and step size (0.001mm/.../1mm) or relative speed (2%/.../100%) in [special continuous mode](doc/ContinuousMode.md).
 * Display shows axis coordinates, spindle speed, speed factor
 * Most buttons simply try executing macros on the Duet.
-* [Experimental Continuous Mode](doc/ContinuousMode.md)
 
 Implementation is based on information from https://github.com/LinuxCNC/linuxcnc/tree/master/src/hal/user_comps/xhc-whb04b-6
 
 ### PS3 DualShock 3 Controller
-* Jogging with directional buttons for X/Y axes, left and right shoulder buttons for Z axis.
-* Trigger buttons to change step size (off/0.01mm/0.1mm/1mm/10mm).
-* Current step size is indicated by the controller number indicator LEDs (1=0.01mm, ... , 4=10mm).
+* Jogging with directional buttons for X/Y axes, left and right shoulder buttons for Z axis as single steps.
+* Jogging with sticks as continuous movements via [special continuous mode](doc/ContinuousMode.md)
+* Trigger buttons to change step size (off/0.01mm/0.1mm/1mm/10mm) or relative speed(off/25%/50%/75%/100%).
+* Current step size / speed is indicated by the controller number indicator LEDs (1=0.01mm/25%, ... , 4=10mm/100%).
 * Other buttons simply try executing macros on the Duet.
-* [Experimental Continuous Mode](doc/ContinuousMode.md)
 
 ### Other
 Implementing other USB HID devices can be done by adding a adequate Pendant class and extending main1.cpp / tuh_hid_mount_cb().
@@ -74,8 +72,15 @@ Implementing other USB HID devices can be done by adding a adequate Pendant clas
 | GND      | GND               | GND          |
 
 ## Installation
-* Compile and flash with PlatformIO, or
-* Copy firmware.uf2 to the RPI Pico after pressing BOOTSEL button while connecting to PC
+* Raspberry Pi Pico
+  * Compile and flash with PlatformIO, or
+  * Copy `firmware.uf2` to the RPI Pico after pressing `BOOTSEL` button while connecting to PC
+* Duet Controller
+  * Enable PanelDue serial interface via `M575 P1 S1 B57600` in `config.g`
+  * optionally: create macros for button functions
+    * place them in subfolders inside `/sys`, the subfolder name depends on the used device
+    * observe the console in the DuetWebControl for how to name the subfolder and file or look at the source code for each device type (`src/Pendant_XXX.h`)
+  * optionally: add g-code/macro files for continuous mode (see [ContinuousMode/Preparation](doc/ContinuousMode.md))
 
 ## Development Info
 - Multicore usage
@@ -102,5 +107,4 @@ Implementing other USB HID devices can be done by adding a adequate Pendant clas
     - no unmount events issued with PlatformIO  
       implemented workaround: periodic check if still mounted
 - Not implemented yet:
-    - continuous movement and long key press handling
     - special emergency stop handling
