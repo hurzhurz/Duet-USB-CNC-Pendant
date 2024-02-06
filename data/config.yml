@@ -1,12 +1,66 @@
 default:
-  aa: 123
-  bb: 555
-  zz:
-    aa: 1
-#WHB04B-6:
-#  bb: 666
-WHB04B-6_VID10CE_PIDEB93:
-  cc: 777
-  5: 4
-  zz:
-    bb: 2
+  axes:
+    0:
+      letter: X
+      stepfeed: 6000
+      continousfeed: 6000
+    1:
+      letter: "Y"
+      stepfeed: 6000
+      continousfeed: 6000
+    2:
+      letter: Z
+      stepfeed: 600
+      continousfeed: 600
+    3:
+      letter: U
+      stepfeed: 6000
+      continousfeed: 6000
+    4:
+      letter: V
+      stepfeed: 6000
+      continousfeed: 6000
+    5:
+      letter: W
+      stepfeed: 6000
+      continousfeed: 6000
+  movecommand: "G91 G1 "
+WHB04B-6:
+  continuousruncommand: "M98 P\"pendant-continuous-run.g\" A\"%c\" F%u D%u"
+  continuousstopcommand: "M98 P\"pendant-continuous-stop.g\""
+  buttoncommands:
+    RESET:
+      command: "M98 P\"WHB04B6/reset.g\""
+    STOP:
+      command: "M98 P\"WHB04B6/stop.g\""
+    STARTPAUSE:
+      command: "M98 P\"WHB04B6/start-pause.g\""
+    M1:
+      command: "M98 P\"WHB04B6/macro-1.g\""
+      fn_command: "M98 P\"WHB04B6/feed-plus.g\""
+    M2:
+      command: "M98 P\"WHB04B6/macro-2.g\""
+      fn_command: "M98 P\"WHB04B6/feed-minus.g\""
+    M3:
+      command: "M98 P\"WHB04B6/macro-3.g\""
+      fn_command: "M98 P\"WHB04B6/spindle-plus.g\""
+    M4:
+      command: "M98 P\"WHB04B6/macro-4.g\""
+      fn_command: "M98 P\"WHB04B6/spindle-minus.g\""
+    M5:
+      command: "M98 P\"WHB04B6/macro-5.g\""
+      fn_command: "M98 P\"WHB04B6/m-home.g\""
+    M6:
+      command: "M98 P\"WHB04B6/macro-6.g\""
+      fn_command: "M98 P\"WHB04B6/safe-z.g\""
+    M7:
+      command: "M98 P\"WHB04B6/macro-7.g\""
+      fn_command: "M98 P\"WHB04B6/w-home.g\""
+    M8:
+      command: "M98 P\"WHB04B6/macro-8.g\""
+      fn_command: "M98 P\"WHB04B6/spindle-onoff.g\""
+    M9:
+      command: "M98 P\"WHB04B6/macro-9.g\""
+      fn_command: "M98 P\"WHB04B6/probe-z.g\""
+    M10:
+      command: "M98 P\"WHB04B6/macro-10.g\""

@@ -130,8 +130,14 @@ void Pendant_WHB04B6::loop()
     {
         float step_size = WHB04B6StepSizes[feed-1];
         uint8_t axis = this->selected_axis-AXISSELCTOR_X;
-        String * cmd = new String(WHB04B6MoveCommands[axis]);
+        String * cmd = new String((*config)["movecommand"]);
+        char axisnumstr[] = "0";
+        axisnumstr[0]+=axis;
+        cmd->concat('F');
+        cmd->concat((uint16_t)(*config)["axes"][axisnumstr]["stepfeed"]);
+        cmd->concat((const char *)((*config)["axes"][axisnumstr]["letter"]));
         cmd->concat(this->jog*step_size);
+        Serial.println(*cmd);
         this->send_command(cmd);
         this->jog = 0;
     }
@@ -174,16 +180,13 @@ void Pendant_WHB04B6::on_key_press(uint8_t keycode)
     // Send ButtonCommands 
     if(keycode<=KEYCODE_M10)
     {
-        const char* cmd;
+        const char* cmd = 0;
         if(this->is_key_pressed(KEYCODE_FN))
-            cmd = WHB04B6ButtonCommandsFN[keycode-1];
+            cmd = (*config)["buttoncommands"][WHB04B6ConfigButtonNames[keycode-1]]["fn_command"];
         else
-            cmd = WHB04B6ButtonCommands[keycode-1];
-        if(cmd[0])
-        {
-            String * cmdstr = new String(cmd);
-            this->send_command(cmdstr);
-        }
+            cmd = (*config)["buttoncommands"][WHB04B6ConfigButtonNames[keycode-1]]["command"];
+        if(cmd && cmd[0])
+            Serial.println(cmd);
     }
 }
 void Pendant_WHB04B6::on_key_release(uint8_t keycode)
@@ -229,8 +232,16 @@ void Pendant_WHB04B6::handle_continuous_update()
     if(this->continuous_axis && this->continuous_axis<=WHB04B6AxisCount && feed && feed<=FEEDSELECTOR_CONT_STEPS)
     {
         char cmd[100];
-        sprintf(cmd, WHB04B6ContinuousRunCommand, WHB04B6AxisLetters[this->continuous_axis-1], (uint16_t)(WHB04B6ContinuousFeeds[this->continuous_axis-1]*WHB04B6ContinuousMultipliers[feed-1]) , this->continuous_direction?1:0 );
+        char axisnumstr[] = "0";
+        axisnumstr[0]+=this->continuous_axis-1;
+        const char * runcmd = (*config)["continuousruncommand"];
+        Serial.print("numstr:");Serial.println(axisnumstr);
+        Serial.println((const char *)(*config)["axes"][axisnumstr]["letter"]);
+        char axisletter = ((const char *)(*config)["axes"][axisnumstr]["letter"])[0];
+        uint16_t axiscontinousfeed = (*config)["axes"][axisnumstr]["continousfeed"];
+        sprintf(cmd, runcmd, axisletter, (uint16_t)(axiscontinousfeed*WHB04B6ContinuousMultipliers[feed-1]) , this->continuous_direction?1:0 );
         String * cmdstr = new String(cmd);
+        Serial.println(*cmdstr);
         this->send_command(cmdstr);
     }
 }
@@ -238,7 +249,8 @@ void Pendant_WHB04B6::stop_continuous()
 {
   if(this->continuous_axis)
   {
-    this->send_command(new String(WHB04B6ContinuousStopCommand));
+    const char * stopcmd = (*config)["continuousstopcommand"];
+    this->send_command(new String(stopcmd));
     this->continuous_axis = 0;
   }
 }

@@ -87,63 +87,28 @@ private:
   } mode = Mode::Continuous;
 };
 
-const uint16_t WHB04B6ContinuousFeeds[] = {6000, 6000, 600, 6000, 6000, 6000};
 const float WHB04B6StepSizes[] = {0.001, 0.01, 0.1, 1.0};
 const float WHB04B6ContinuousMultipliers[] = {0.02, 0.05, 0.10, 0.30, 0.60, 1.00};
-const char WHB04B6AxisLetters[] = {'X','Y','Z','U','V','W'};
 const uint8_t WHB04B6AxisCount = 6;
 
-const char* const WHB04B6MoveCommands[] =
+const char* const WHB04B6ConfigButtonNames[] =
 {
-  "G91 G1 F6000 X",     // X axis
-  "G91 G1 F6000 Y",     // Y axis
-  "G91 G1 F600 Z",      // Z axis
-  "G91 G1 F6000 U",      // axis 4
-  "G91 G1 F6000 V",      // axis 5
-  "G91 G1 F6000 W",      // axis 6
-};
-
-const char WHB04B6ContinuousRunCommand[] = "M98 P\"pendant-continuous-run.g\" A\"%c\" F%u D%u";
-const char WHB04B6ContinuousStopCommand[] = "M98 P\"pendant-continuous-stop.g\"";
-
-const char* const WHB04B6ButtonCommands[] =
-{
-  "M98 P\"WHB04B6/reset.g\"", // Button RESET
-  "M98 P\"WHB04B6/stop.g\"", // Button STOP
-  "M98 P\"WHB04B6/start-pause.g\"", // Button STARTPAUSE
-  "M98 P\"WHB04B6/macro-1.g\"", // Button M1_FEEDPLUS
-  "M98 P\"WHB04B6/macro-2.g\"", // Button M2_FEEDMINUS
-  "M98 P\"WHB04B6/macro-3.g\"", // Button M3_SPINDLEPLUS
-  "M98 P\"WHB04B6/macro-4.g\"", // Button M4_SPINDLEMINUS
-  "M98 P\"WHB04B6/macro-5.g\"", // Button M5_MHOME
-  "M98 P\"WHB04B6/macro-6.g\"", // Button M6_SAFEZ
-  "M98 P\"WHB04B6/macro-7.g\"", // Button M7_WHOME
-  "M98 P\"WHB04B6/macro-8.g\"", // Button M8_SPINDLEONOFF
-  "", // Button FN
-  "M98 P\"WHB04B6/macro-9.g\"", // Button M9_PROBEZ
-  "", // Button CONTINUOUS
-  "", // Button STEP
-  "M98 P\"WHB04B6/macro-10.g\"", // Button M10
-};
-
-const char* const WHB04B6ButtonCommandsFN[] =
-{
-  "", // Button RESET
-  "", // Button STOP
-  "", // Button STARTPAUSE
-  "M98 P\"WHB04B6/feed-plus.g\"", // Button M1_FEEDPLUS
-  "M98 P\"WHB04B6/feed-minus.g\"", // Button M2_FEEDMINUS
-  "M98 P\"WHB04B6/spindle-plus.g\"", // Button M3_SPINDLEPLUS
-  "M98 P\"WHB04B6/spindle-minus.g\"", // Button M4_SPINDLEMINUS
-  "M98 P\"WHB04B6/m-home.g\"", // Button M5_MHOME
-  "M98 P\"WHB04B6/safe-z.g\"", // Button M6_SAFEZ
-  "M98 P\"WHB04B6/w-home.g\"", // Button M7_WHOME
-  "M98 P\"WHB04B6/spindle-onoff.g\"", // Button M8_SPINDLEONOFF
-  "", // Button FN
-  "M98 P\"WHB04B6/probe-z.g\"", // Button M9_PROBEZ
-  "", // Button CONTINUOUS
-  "", // Button STEP
-  "", // Button M10
+  "RESET", // Button RESET
+  "STOP", // Button STOP
+  "STARTPAUSE", // Button STARTPAUSE
+  "M1", // Button M1_FEEDPLUS
+  "M2", // Button M2_FEEDMINUS
+  "M3", // Button M3_SPINDLEPLUS
+  "M4", // Button M4_SPINDLEMINUS
+  "M5", // Button M5_MHOME
+  "M6", // Button M6_SAFEZ
+  "M7", // Button M7_WHOME
+  "M8", // Button M8_SPINDLEONOFF
+  "FN", // Button FN
+  "M9", // Button M9_PROBEZ
+  "CONTINUOUS", // Button CONTINUOUS
+  "STEP", // Button STEP
+  "M10", // Button M10
 };
 
 #endif
