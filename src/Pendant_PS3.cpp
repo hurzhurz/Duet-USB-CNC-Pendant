@@ -2,7 +2,7 @@
 
 #define CMD_CONTINUOUS_INTERVAL 500
 
-Pendant_PS3::Pendant_PS3(uint8_t dev_addr, uint8_t instance): USBHIDPendant(dev_addr, instance)
+Pendant_PS3::Pendant_PS3(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config): USBHIDPendant(dev_addr, instance, config)
 {
   for(uint8_t i = 0; i<PS3_REPORT_BUFFER_SIZE;i++)
     this->write_buffer[i]=PS3_REPORT_BUFFER[i];

@@ -51,6 +51,7 @@ USBHIDPendant::~USBHIDPendant()
       this->on_key_release(this->pressed_keys[i]);
   // Run Loop a last time
   this->loop();
+  delete config;
 }
 
 void USBHIDPendant::send_command(String * cmd)

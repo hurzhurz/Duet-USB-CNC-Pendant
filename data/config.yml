@@ -1,0 +1,12 @@
+default:
+  aa: 123
+  bb: 555
+  zz:
+    aa: 1
+#WHB04B-6:
+#  bb: 666
+WHB04B-6_VID10CE_PIDEB93:
+  cc: 777
+  5: 4
+  zz:
+    bb: 2

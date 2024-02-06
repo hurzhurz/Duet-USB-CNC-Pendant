@@ -20,6 +20,12 @@
  any redistribution
 *********************************************************************/
 
+#include <LittleFS.h>
+#include <SingleFileDrive.h>
+#include <ArduinoJson.h>
+#include <ArduinoYaml.h>
+
+DynamicJsonDocument config_json_doc(2048);
 
 // pio-usb is required for rp2040 host
 #include "pio_usb.h"
@@ -39,12 +45,35 @@ tusb_desc_device_t desc_device;
 #define MAX_DEV 5
 struct USBHIDPendantDevice devices[MAX_DEV];
 
+
+DynamicJsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t pid);
+
 // the setup function runs once when you press reset or power the board
 
 // core1's setup
 void setup1() {
   //while ( !Serial ) delay(10);   // wait for native usb
   Serial.println("Core1 setup to run TinyUSB host with pio-usb");
+
+  LittleFS.begin();
+  singleFileDrive.begin("config.yml", "READONLY_config.yml");
+
+  File file = LittleFS.open( "config.yml", "r" );
+  if (!file)
+  {
+    Serial.println("config file open failed");
+  }
+  else
+  {
+    DeserializationError error = deserializeYml( config_json_doc, file ); // convert yaml to json
+    file.close();
+    if (error)
+    {
+        Serial.print(F("deserializeYml() failed: "));
+        Serial.println(error.f_str());
+    }
+  }
+
 
   // Check for CPU frequency, must be multiple of 120Mhz for bit-banging USB
   uint32_t cpu_hz = clock_get_hz(clk_sys);
@@ -170,26 +199,30 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
       devices[i].dev_addr = dev_addr;
       devices[i].instance = instance;
       USBHIDPendant * object = 0;
+      DynamicJsonDocument * config = 0;
       // check if known device type and create matching object
       //
       // Keyboard / Numpad
       if(itf_protocol == HID_ITF_PROTOCOL_KEYBOARD)
       {
         Serial.printf("Found new Keyboard/Numpad device\r\n");
-        object = new Pendant_Numpad(dev_addr, instance);
+        config = get_config("Numpad", vid, pid);
+        object = new Pendant_Numpad(dev_addr, instance, config);
       }
       // WHB04B-6 Wireless CNC Pendant
       // https://github.com/LinuxCNC/linuxcnc/tree/master/src/hal/user_comps/xhc-whb04b-6
       if(itf_protocol == HID_ITF_PROTOCOL_NONE && vid == 0x10ce && pid == 0xeb93)
       {
         Serial.printf("Found new WHB04B-6 device\r\n");
-        object = new Pendant_WHB04B6(dev_addr, instance);
+        config = get_config("WHB04B-6", vid, pid);
+        object = new Pendant_WHB04B6(dev_addr, instance, config);
       }
       // PS3 Dualshock Controller
       if(itf_protocol == HID_ITF_PROTOCOL_NONE && vid == 0x054c && pid == 0x0268)
       {
         Serial.printf("Found new PS3 device\r\n");
-        object = new Pendant_PS3(dev_addr, instance);
+        config = get_config("PS3", vid, pid);
+        object = new Pendant_PS3(dev_addr, instance, config);
       }
       // store object and done
       devices[i].object = object;
@@ -233,5 +266,42 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
     {
       devices[i].object->report_received(report, len);
     }
+  }
+}
+
+//DynamicJsonDocument *
+void merge_json(JsonVariant dst, JsonVariantConst src);
+DynamicJsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t pid)
+{
+ char name[50];
+ sprintf(name, "%s_VID%04X_PID%04X", devicetype, vid, pid);
+ Serial.print("Load and merge config: default, ");
+ Serial.print(devicetype);
+ Serial.print(", ");
+ Serial.println(name);
+ DynamicJsonDocument * config = new DynamicJsonDocument(2048);
+ merge_json(*config, config_json_doc["default"]);
+ merge_json(*config, config_json_doc[devicetype]);
+ merge_json(*config, config_json_doc[name]);
+ return config;
+}
+
+// https://arduinojson.org/v6/how-to/merge-json-objects/
+void merge_json(JsonVariant dst, JsonVariantConst src)
+{
+  if(src.isNull()) return;
+  if (src.is<JsonObjectConst>())
+  {
+    for (JsonPairConst kvp : src.as<JsonObjectConst>())
+    {
+      if (dst.containsKey(kvp.key())) 
+        merge_json(dst[kvp.key()], kvp.value());
+      else
+        dst[kvp.key()] = kvp.value();
+    }
+  }
+  else
+  {
+    dst.set(src);
   }
 }
