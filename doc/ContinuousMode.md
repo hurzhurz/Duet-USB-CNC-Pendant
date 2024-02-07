@@ -24,7 +24,8 @@
 
 ### PS3 Controller
 * Continuous movements are controlled via the left stick (for X/Y) and right stick (for Z).
-* Relative feed rate is set like the step size (off/25%/50%/75%/100%)
+* Maximum relative feed rate is set like the step size (off/25%/50%/75%/100%)
+* The stick position is used for a variable speed control
 * Only one axis can be moved at a time
 
 ## Working principle

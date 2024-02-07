@@ -21,8 +21,8 @@
 #define BUTTON_SQUARE 0x0f
 #define BUTTON_PS 0x10
 
-#define STICK_HIST_ON 60
-#define STICK_HIST_OFF 30
+#define STICK_HIST_ON 15
+#define STICK_HIST_OFF 10
 #define STICK_MID 127
 
 
@@ -57,11 +57,13 @@ private:
   void set_leds(uint8_t leds);
   void handle_continuous();
   void stop_continuous();
+  float stick_to_speedfector(uint8_t stick);
   uint32_t pressed_buttons=0;
   uint8_t step=0;
   uint8_t write_buffer[PS3_REPORT_BUFFER_SIZE];
   uint8_t continuous_axis = 0;
   bool continuous_direction;
+  float continuous_stick_speedfector = 1.0;
 };
 
 const float PS3StepSizes[] = {0.01, 0.1, 1.0, 10.0};
