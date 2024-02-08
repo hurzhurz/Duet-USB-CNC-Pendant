@@ -1,2 +1,0 @@
-# git config --global merge.ours.driver true
-firmware.uf2 merge=ours
