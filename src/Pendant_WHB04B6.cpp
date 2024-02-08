@@ -186,7 +186,7 @@ void Pendant_WHB04B6::on_key_press(uint8_t keycode)
         else
             cmd = (*config)["buttoncommands"][WHB04B6ConfigButtonNames[keycode-1]]["command"];
         if(cmd && cmd[0])
-            Serial.println(cmd);
+            this->send_command(new String(cmd));
     }
 }
 void Pendant_WHB04B6::on_key_release(uint8_t keycode)

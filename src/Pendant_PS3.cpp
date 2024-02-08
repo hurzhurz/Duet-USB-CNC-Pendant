@@ -47,7 +47,6 @@ void Pendant_PS3::handle_continuous()
         char cmd[100];
         float feed = (PS3ContinuousFeeds[this->continuous_axis-1]*PS3ContinuousMultipliers[this->step-1]);
         feed = feed * this->continuous_stick_speedfector;
-        Serial.println(feed);
         sprintf(cmd, PS3ContinuousRunCommand, PS3AxisLetters[this->continuous_axis-1], (uint16_t)feed , this->continuous_direction?1:0 );
         String * cmdstr = new String(cmd);
         this->send_command(cmdstr);
