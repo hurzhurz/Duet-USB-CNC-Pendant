@@ -1,6 +1,16 @@
 #include "Pendant_PS3.h"
 
-#define CMD_CONTINUOUS_INTERVAL 500
+#define CMD_CONTINUOUS_INTERVAL 100
+
+
+float Pendant_PS3::stick_to_speedfector(uint8_t stick)
+{
+  if(stick > STICK_MID)
+    stick -= STICK_MID;
+  else
+    stick = STICK_MID - stick;
+  return ((float)map(stick, STICK_HIST_OFF, STICK_MID, 5, 100)) / 100.0;
+}
 
 Pendant_PS3::Pendant_PS3(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config): USBHIDPendant(dev_addr, instance, config)
 {
@@ -35,7 +45,10 @@ void Pendant_PS3::handle_continuous()
     if(this->continuous_axis && this->continuous_axis<=3 && this->step)
     {
         char cmd[100];
-        sprintf(cmd, PS3ContinuousRunCommand, PS3AxisLetters[this->continuous_axis-1], (uint16_t)(PS3ContinuousFeeds[this->continuous_axis-1]*PS3ContinuousMultipliers[this->step-1]) , this->continuous_direction?1:0 );
+        float feed = (PS3ContinuousFeeds[this->continuous_axis-1]*PS3ContinuousMultipliers[this->step-1]);
+        feed = feed * this->continuous_stick_speedfector;
+        Serial.println(feed);
+        sprintf(cmd, PS3ContinuousRunCommand, PS3AxisLetters[this->continuous_axis-1], (uint16_t)feed , this->continuous_direction?1:0 );
         String * cmdstr = new String(cmd);
         this->send_command(cmdstr);
     }
@@ -101,25 +114,43 @@ void Pendant_PS3::report_received(uint8_t const *report, uint16_t len)
     {
       case 1: // X
         if(stick_l_h < STICK_MID-STICK_HIST_OFF)
+        {
           this->continuous_direction = false;
+          this->continuous_stick_speedfector = this->stick_to_speedfector(stick_l_h);
+        }
         else if(stick_l_h > STICK_MID+STICK_HIST_OFF)
+        {
           this->continuous_direction = true;
+          this->continuous_stick_speedfector = this->stick_to_speedfector(stick_l_h);
+        }
         else
           this->stop_continuous();
         break;
       case 2: // Y
         if(stick_l_v < STICK_MID-STICK_HIST_OFF)
+        {
           this->continuous_direction = true;
+          this->continuous_stick_speedfector = this->stick_to_speedfector(stick_l_v);
+        }
         else if(stick_l_v > STICK_MID+STICK_HIST_OFF)
+        {
           this->continuous_direction = false;
+          this->continuous_stick_speedfector = this->stick_to_speedfector(stick_l_v);
+        }
         else
           this->stop_continuous();
         break;
       case 3: // Z
         if(stick_r_v < STICK_MID-STICK_HIST_OFF)
+        {
           this->continuous_direction = true;
+          this->continuous_stick_speedfector = this->stick_to_speedfector(stick_r_v);
+        }
         else if(stick_r_v > STICK_MID+STICK_HIST_OFF)
+        {
           this->continuous_direction = false;
+          this->continuous_stick_speedfector = this->stick_to_speedfector(stick_r_v);
+        }
         else
           this->stop_continuous();
         break;
