@@ -25,7 +25,7 @@
 #include <ArduinoJson.h>
 #include <ArduinoYaml.h>
 
-DynamicJsonDocument config_json_doc(4096);
+JsonDocument config_json_doc;
 
 // pio-usb is required for rp2040 host
 #include "pio_usb.h"
@@ -46,7 +46,7 @@ tusb_desc_device_t desc_device;
 struct USBHIDPendantDevice devices[MAX_DEV];
 
 
-DynamicJsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t pid);
+JsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t pid);
 
 // the setup function runs once when you press reset or power the board
 
@@ -199,7 +199,7 @@ void tuh_hid_mount_cb(uint8_t dev_addr, uint8_t instance, uint8_t const *desc_re
       devices[i].dev_addr = dev_addr;
       devices[i].instance = instance;
       USBHIDPendant * object = 0;
-      DynamicJsonDocument * config = 0;
+      JsonDocument * config = 0;
       // check if known device type and create matching object
       //
       // Keyboard / Numpad
@@ -271,7 +271,7 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
 
 //DynamicJsonDocument *
 void merge_json(JsonVariant dst, JsonVariantConst src);
-DynamicJsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t pid)
+JsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t pid)
 {
  char name[50];
  sprintf(name, "%s_VID%04X_PID%04X", devicetype, vid, pid);
@@ -279,7 +279,7 @@ DynamicJsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t
  Serial.print(devicetype);
  Serial.print(", ");
  Serial.println(name);
- DynamicJsonDocument * config = new DynamicJsonDocument(2048);
+ JsonDocument * config = new JsonDocument;
  merge_json(*config, config_json_doc["default"]);
  merge_json(*config, config_json_doc[devicetype]);
  merge_json(*config, config_json_doc[name]);

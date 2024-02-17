@@ -17,7 +17,7 @@ struct DuetStatus
 class USBHIDPendant
 {
 public:
-  USBHIDPendant(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config=0): kb_dev_addr(dev_addr), kb_instance(instance), config(config) {};
+  USBHIDPendant(uint8_t dev_addr, uint8_t instance, JsonDocument* config=0): kb_dev_addr(dev_addr), kb_instance(instance), config(config) {};
   virtual ~USBHIDPendant();
   virtual void report_received(uint8_t const *report, uint16_t len){};
   virtual void duetstatus_received(DuetStatus * duetstatus){};
@@ -30,7 +30,7 @@ protected:
   bool is_key_pressed(uint8_t keycode);
   virtual void on_key_press(uint8_t keycode){}
   virtual void on_key_release(uint8_t keycode){}
-  DynamicJsonDocument* config;
+  JsonDocument* config;
 
 private:
   uint8_t kb_dev_addr;

@@ -5,7 +5,7 @@
 
 
 
-Pendant_WHB04B6::Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config):
+Pendant_WHB04B6::Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance, JsonDocument* config):
     USBHIDPendant(dev_addr, instance, config),
     axis_coordinates{0.0,0.0,0.0,0.0,0.0,0.0},
     display_report_data{ 0x06, 0xfe, 0xfd, SEED, 0x81, 0x00, 0x00, 0x00,

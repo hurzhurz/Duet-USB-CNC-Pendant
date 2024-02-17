@@ -33,8 +33,8 @@ GCodeSerial output(DuetSerial);
 PassThrough passThrough;
 
 JSONReader jsonReader(200, "{\"key\":\"", "{\"key\":\"\""); // expect non empty key, want '{"key":"' but not '{"key":""'
-StaticJsonDocument<1000> jsondoc;
-StaticJsonDocument<100> jsonfilter;
+JsonDocument jsondoc;
+JsonDocument jsonfilter;
 DuetStatus duetstatus = {};
 
 void setup()

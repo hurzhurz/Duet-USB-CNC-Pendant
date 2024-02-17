@@ -12,7 +12,7 @@ float Pendant_PS3::stick_to_speedfector(uint8_t stick)
   return ((float)map(stick, STICK_HIST_OFF, STICK_MID, 5, 100)) / 100.0;
 }
 
-Pendant_PS3::Pendant_PS3(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config): USBHIDPendant(dev_addr, instance, config)
+Pendant_PS3::Pendant_PS3(uint8_t dev_addr, uint8_t instance, JsonDocument* config): USBHIDPendant(dev_addr, instance, config)
 {
   for(uint8_t i = 0; i<PS3_REPORT_BUFFER_SIZE;i++)
     this->write_buffer[i]=PS3_REPORT_BUFFER[i];

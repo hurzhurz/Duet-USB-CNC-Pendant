@@ -25,7 +25,7 @@
 class Pendant_Numpad: public USBHIDPendant
 {
 public:
-  Pendant_Numpad(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config=0): USBHIDPendant(dev_addr, instance, config){};
+  Pendant_Numpad(uint8_t dev_addr, uint8_t instance, JsonDocument* config=0): USBHIDPendant(dev_addr, instance, config){};
   void report_received(uint8_t const *report, uint16_t len) override;
   void loop() override;
   void toogle_numlockled();

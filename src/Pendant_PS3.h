@@ -45,7 +45,7 @@ const uint8_t PS3_REPORT_BUFFER[PS3_REPORT_BUFFER_SIZE] = {
 class Pendant_PS3: public USBHIDPendant
 {
 public:
-  Pendant_PS3(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config=0);
+  Pendant_PS3(uint8_t dev_addr, uint8_t instance, JsonDocument* config=0);
   void report_received(uint8_t const *report, uint16_t len) override;
   void loop() override;
 

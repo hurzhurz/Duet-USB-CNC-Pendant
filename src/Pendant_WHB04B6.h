@@ -57,7 +57,7 @@
 class Pendant_WHB04B6: public USBHIDPendant
 {
 public:
-  Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance, DynamicJsonDocument* config=0);
+  Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance, JsonDocument* config=0);
   ~Pendant_WHB04B6();
   void report_received(uint8_t const *report, uint16_t len) override;
   void duetstatus_received(DuetStatus * duetstatus) override;
