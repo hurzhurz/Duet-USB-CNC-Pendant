@@ -25,7 +25,7 @@
 #include <ArduinoJson.h>
 #include <ArduinoYaml.h>
 
-DynamicJsonDocument config_json_doc(2048);
+DynamicJsonDocument config_json_doc(4096);
 
 // pio-usb is required for rp2040 host
 #include "pio_usb.h"
