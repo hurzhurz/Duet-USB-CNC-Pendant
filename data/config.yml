@@ -64,3 +64,44 @@ WHB04B-6:
       fn_command: "M98 P\"WHB04B6/probe-z.g\""
     M10:
       command: "M98 P\"WHB04B6/macro-10.g\""
+Numpad:
+  keys:
+#    42: # backspace
+#      command: abc
+#      alt_command: xxx
+#      alt_key: 99
+#    83: # numlock
+#      command: def
+    88: # KEYCODE_ENTER
+      command: "M98 P\"Numpad/enter.g\""
+    89: # KEYCODE_1_END
+      command: "M98 P\"Numpad/1_end.g\""
+    91: # KEYCODE_3_PGDN
+      command: "M98 P\"Numpad/3_pgdn.g\""
+    93: # KEYCODE_5
+      command: "M98 P\"Numpad/5.g\""
+    95: # Button KEYCODE_7_HOME
+      command: "M98 P\"Numpad/7_home.g\""
+    97: # Button KEYCODE_9_PGUP
+      command: "M98 P\"Numpad/9_pgup.g\""
+
+    94:  # KEYCODE_6_RIGHT
+      move_axis: 0 # X
+      move_direction: True
+    92:  # KEYCODE_4_LEFT
+      move_axis: 0 # X
+      move_direction: False
+
+    96:  # KEYCODE_8_UP
+      move_axis: 1 # Y
+      move_direction: True
+    90:  # KEYCODE_2_DOWN
+      move_axis: 1 # Y
+      move_direction: False
+
+    86:  # KEYCODE_SUB
+      move_axis: 2 # Z
+      move_direction: True
+    87:  # KEYCODE_ADD
+      move_axis: 2 # Z
+      move_direction: False

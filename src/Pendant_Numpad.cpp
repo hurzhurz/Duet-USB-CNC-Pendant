@@ -68,7 +68,24 @@ void Pendant_Numpad::on_key_press(uint8_t keycode)
 {
     Serial.print("Key Press: ");
     Serial.println(keycode, HEX);
+    char keycodestr[4];
+    itoa(keycode,keycodestr,10);
+    JsonVariant keyconfig = (*config)["keys"][keycodestr];
+    if(!keyconfig.isNull())
+    {
+      const char* cmd = 0;
 
+      // Send ButtonCommands
+      uint8_t altkey = keyconfig["alt_key"];
+      if(altkey && this->is_key_pressed(altkey))
+        cmd = keyconfig["alt_command"];
+      else
+        cmd = keyconfig["command"];
+      if(cmd && cmd[0])
+          this->send_command(new String(cmd));
+
+      
+    }
     // Change Distance per KeyPress
     if(keycode == KEYCODE_NUMLOCK)
     {
@@ -91,69 +108,34 @@ void Pendant_Numpad::on_key_press(uint8_t keycode)
       this->continuous_mode=false;
       this->stop_continuous();
     } 
-
-    // Send ButtonCommands
-    if(keycode==KEYCODE_BACKSPACE || (keycode>=KEYCODE_NUMLOCK && keycode<=KEYCODE_DOT_DEL))
-    {
-        const char* cmd;
-        if(keycode==KEYCODE_BACKSPACE)
-            cmd = NumpadButtonCommands[0];
-        else
-            cmd = NumpadButtonCommands[keycode-KEYCODE_NUMLOCK+1];
-        if(cmd[0])
-        {
-            String * cmdstr = new String(cmd);
-            this->send_command(cmdstr);
-        }
-    }
     
     // Move Command / Step Mode
-    if(!this->continuous_mode && this->speed_step && (keycode==KEYCODE_SUB || keycode==KEYCODE_ADD || keycode==KEYCODE_2_DOWN || keycode==KEYCODE_4_LEFT || keycode==KEYCODE_6_RIGHT || keycode==KEYCODE_8_UP))
+    if(!this->continuous_mode && this->speed_step && !keyconfig.isNull() && !keyconfig["move_axis"].isNull())
     {
-      String * cmd = new String;
-      if(keycode==KEYCODE_4_LEFT || keycode==KEYCODE_6_RIGHT)
-        cmd->concat(NumpadMoveCommands[0]);
-      else if(keycode==KEYCODE_2_DOWN || keycode==KEYCODE_8_UP)
-        cmd->concat(NumpadMoveCommands[1]);
-      else if(keycode==KEYCODE_SUB || keycode==KEYCODE_ADD)
-        cmd->concat(NumpadMoveCommands[2]);
-
-      if(keycode==KEYCODE_6_RIGHT || keycode==KEYCODE_8_UP || keycode==KEYCODE_SUB)
-        cmd->concat(NumpadStepSizes[this->speed_step-1]);
-      else if(keycode==KEYCODE_4_LEFT || keycode==KEYCODE_2_DOWN || keycode==KEYCODE_ADD)
-        cmd->concat(-NumpadStepSizes[this->speed_step-1]);
-
-      this->send_command(cmd);
+      uint8_t axis = keyconfig["move_axis"];
+      if(axis<NumpadAxisCount)
+      {
+        String * cmd = new String(NumpadMoveCommands[axis]);
+        float step = NumpadStepSizes[this->speed_step-1];
+        bool direction = keyconfig["move_direction"] | true;
+        if(!direction)
+          step = -step;
+        cmd->concat(step);
+        this->send_command(cmd);
+      }
     }
 
     if(this->continuous_mode && !this->continuous_axis) // start continuous move
     {
-      switch(keycode)
+      if(!keyconfig.isNull() && !keyconfig["move_axis"].isNull())
       {
-        case KEYCODE_6_RIGHT:
-          this->continuous_axis=1;
-          this->continuous_direction=true;
-          break;
-        case KEYCODE_4_LEFT:
-          this->continuous_axis=1;
-          this->continuous_direction=false;
-          break;
-        case KEYCODE_8_UP:
-          this->continuous_axis=2;
-          this->continuous_direction=true;
-          break;
-        case KEYCODE_2_DOWN:
-          this->continuous_axis=2;
-          this->continuous_direction=false;
-          break;
-        case KEYCODE_SUB:
-          this->continuous_axis=3;
-          this->continuous_direction=true;
-          break;
-        case KEYCODE_ADD:
-          this->continuous_axis=3;
-          this->continuous_direction=false;
-          break;
+          uint8_t axis = keyconfig["move_axis"];
+          if(axis<NumpadAxisCount)
+          {
+            this->continuous_axis=axis+1;
+            this->continuous_direction= keyconfig["move_direction"] | true;
+            this->continuous_key=keycode;
+          }
       }
       if(this->continuous_axis)
         this->handle_continuous();
@@ -167,16 +149,8 @@ void Pendant_Numpad::on_key_release(uint8_t keycode)
 {
     Serial.print("Key Release: ");
     Serial.println(keycode, HEX);
-    if(this->continuous_axis)
+    if(this->continuous_axis && keycode==this->continuous_key)
     {
-      if(
-          (keycode==KEYCODE_6_RIGHT && this->continuous_axis==1 &&  this->continuous_direction) ||
-          (keycode==KEYCODE_4_LEFT  && this->continuous_axis==1 && !this->continuous_direction) ||
-          (keycode==KEYCODE_8_UP    && this->continuous_axis==2 &&  this->continuous_direction) ||
-          (keycode==KEYCODE_2_DOWN  && this->continuous_axis==2 && !this->continuous_direction) ||
-          (keycode==KEYCODE_SUB     && this->continuous_axis==3 &&  this->continuous_direction) ||
-          (keycode==KEYCODE_ADD     && this->continuous_axis==3 && !this->continuous_direction)
-        )
-        stop_continuous();
+      stop_continuous();
     }
 }

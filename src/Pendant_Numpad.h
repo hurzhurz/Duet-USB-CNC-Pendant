@@ -38,6 +38,7 @@ private:
   uint8_t speed_step = 0;
   bool continuous_mode = false;
   uint8_t continuous_axis = 0;
+  uint8_t continuous_key = 0;
   bool continuous_direction;
   uint8_t leds=0;
 };
@@ -59,26 +60,5 @@ const char* const NumpadMoveCommands[] =
   "G91 G1 F600 Z",      // Z axis
 };
 
-const char* const NumpadButtonCommands[] =
-{
-  "", // Button BACKSPACE
-  "", // Button NUMLOCK
-  "", // Button DIV
-  "", // Button MULT
-  "", // Button SUB
-  "", // Button ADD
-  "M98 P\"Numpad/enter.g\"", // Button ENTER
-  "M98 P\"Numpad/1_end.g\"", // Button 1_END
-  "", // Button 2_DOWN
-  "M98 P\"Numpad/3_pgdn.g\"", // Button 3_PGDN
-  "", // Button 4_LEFT
-  "M98 P\"Numpad/5.g\"", // Button 5
-  "", // Button 6_RIGHT
-  "M98 P\"Numpad/7_home.g\"", // Button 7_HOME
-  "", // Button 8_UP
-  "M98 P\"Numpad/9_pgup.g\"", // Button 9_PGUP
-  "", // Button 0_INS
-  ""  // Button DOT_DEL
-};
 
 #endif
