@@ -1,3 +1,5 @@
+ ## WIP config-file branch, see [doc/ConfigFile.md](doc/ConfigFile.md)
+
 # Duet USB CNC Pendant
 (work in progress / use at own risk)
 
