@@ -103,6 +103,9 @@ void Pendant_WHB04B6::uint16_to_report_bytes(uint16_t val, uint8_t idx_lower, ui
 
 void Pendant_WHB04B6::send_display_report()
 {
+    if(this->report_packet_next>0)
+        return; // sending already in progress
+
     this->last_display_report = millis();
 
     // update axis coordinates in display report data
@@ -115,8 +118,29 @@ void Pendant_WHB04B6::send_display_report()
     if(this->mode == Mode::Step) mode_bits=0x01;
     this->display_report_data[R_IDX(3)] = (this->display_report_data[R_IDX(3)]&(~0x3)) | mode_bits;
 
-    // send display report data to device
-    this->set_report(0x06, HID_REPORT_TYPE_FEATURE, &this->display_report_data, 24);
+    // send first packet of display report data to device
+    this->set_report();
+}
+
+void Pendant_WHB04B6::set_report()
+{
+    if(this->report_packet_next>=REPORT_PACKET_COUNT)
+    {
+        // all packets sent
+        this->report_packet_next = 0;
+        return;
+    }
+    this->USBHIDPendant::set_report(0x06, HID_REPORT_TYPE_FEATURE, &(this->display_report_data[this->report_packet_next++ * 8]), 8);
+}
+
+void Pendant_WHB04B6::set_report_complete(uint8_t report_id, uint8_t report_type, uint16_t len)
+{
+    if(report_id!=0x06) // wrong report id?
+        return;
+    if(len!=8) // send failed ?
+        this->report_packet_next = 0;
+    else
+        this->set_report(); // send next packet
 }
 
 void Pendant_WHB04B6::loop()
