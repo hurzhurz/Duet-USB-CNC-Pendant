@@ -20,6 +20,7 @@ public:
   USBHIDPendant(uint8_t dev_addr, uint8_t instance, JsonDocument* config=0): kb_dev_addr(dev_addr), kb_instance(instance), config(config) {};
   virtual ~USBHIDPendant();
   virtual void report_received(uint8_t const *report, uint16_t len){};
+  virtual void set_report_complete(uint8_t report_id, uint8_t report_type, uint16_t len){};
   virtual void duetstatus_received(DuetStatus * duetstatus){};
   virtual void loop(){};
 

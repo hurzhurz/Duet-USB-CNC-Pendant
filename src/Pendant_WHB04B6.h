@@ -10,6 +10,7 @@
 #define CMD_STEP_INTERVAL 100
 #define CMD_CONTINUOUS_CHECK_INTERVAL 100
 #define CMD_CONTINUOUS_UPDATE_INTERVAL 500
+#define REPORT_PACKET_COUNT 3
 
 #define SEED 0xff
 
@@ -60,14 +61,17 @@ public:
   Pendant_WHB04B6(uint8_t dev_addr, uint8_t instance, JsonDocument* config=0);
   ~Pendant_WHB04B6();
   void report_received(uint8_t const *report, uint16_t len) override;
+  void set_report_complete(uint8_t report_id, uint8_t report_type, uint16_t len) override;
   void duetstatus_received(DuetStatus * duetstatus) override;
   void loop() override;
 private:
   void send_display_report();
+  void set_report();
   void double_to_report_bytes(double val, uint8_t idx_intval_lower, uint8_t idx_intval_upper, uint8_t idx_frac_lower, uint8_t idx_frac_upper);
   void uint16_to_report_bytes(uint16_t val, uint8_t idx_lower, uint8_t idx_upper);
   double axis_coordinates[6];
   uint8_t display_report_data[24];
+  uint8_t report_packet_next = 0;
   uint8_t selected_axis, display_axis_offset, selected_feed;
   unsigned long last_display_report;
   int16_t jog;

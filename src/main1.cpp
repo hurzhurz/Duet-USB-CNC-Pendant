@@ -269,6 +269,18 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
   }
 }
 
+void tuh_hid_set_report_complete_cb(uint8_t dev_addr, uint8_t instance, uint8_t report_id, uint8_t report_type, uint16_t len) {
+  Serial.printf("HID set report complete for device address = %d, instance = %d, report_id = %d, report_type = %d, len = %d\r\n", dev_addr, instance, report_id, report_type, len);
+  // search device object and call report callback
+  for(uint8_t i = 0 ; i < MAX_DEV ; i++)
+  {
+    if(devices[i].dev_addr == dev_addr && devices[i].instance == instance && devices[i].object)
+    {
+      devices[i].object->set_report_complete(report_id, report_type, len);
+    }
+  }
+}
+
 //DynamicJsonDocument *
 void merge_json(JsonVariant dst, JsonVariantConst src);
 JsonDocument * get_config(const char * devicetype, uint16_t vid, uint16_t pid)
