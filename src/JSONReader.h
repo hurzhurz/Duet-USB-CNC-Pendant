@@ -18,6 +18,8 @@ private:
   char * filter_select = 0;
   char * filter_discard = 0;
   bool filter_select_done, filter_discard_done;
+  bool filter_select_ok;
+  uint16_t filter_search_start_pos = 0;
   uint16_t filter_select_len = 0;
   uint16_t filter_discard_len = 0;
   uint16_t buffer_size;

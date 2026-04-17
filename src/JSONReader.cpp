@@ -35,6 +35,8 @@ void JSONReader::write(uint8_t c)
             {
                 this->filter_select_done = this->filter_select==0;
                 this->filter_discard_done = this->filter_discard==0;
+                this->filter_select_ok = true;
+                this->filter_search_start_pos = 0;
                 this->state = (this->filter_select_done&&this->filter_discard_done)?State::reading:State::filtering;
                 this->length = 0;
             }
@@ -68,22 +70,30 @@ void JSONReader::write(uint8_t c)
                 this->buffer[this->length++] = c;
                 if(this->state==State::filtering)
                 {
-                    if(!this->filter_select_done)
+                    if(c == ',' || c == '{')
                     {
-                        if(this->filter_select[this->length-1] != c)
-                            this->state = State::waitingForNewLine;
-                        else if(this->filter_select[this->length] == 0) // end of filter - still matching
-                            this->filter_select_done = true;
+                        this->filter_search_start_pos = this->length;
+                        this->filter_select_ok = true;
                     }
-                    if(!this->filter_discard_done)
+                    else
                     {
-                        if(this->filter_discard[this->length-1] != c)
-                            this->filter_discard_done = true;
-                        else if(this->filter_discard[this->length] == 0) // end of filter - still matching
-                            this->state = State::waitingForNewLine;
+                        if(!this->filter_select_done)
+                        {
+                            if(this->filter_select[this->length-1-this->filter_search_start_pos] != c)
+                                this->filter_select_ok = false;
+                            else if(this->filter_select_ok && this->filter_select[this->length-this->filter_search_start_pos] == 0) // end of filter - still matching
+                                this->filter_select_done = true;
+                        }
+                        if(!this->filter_discard_done)
+                        {
+                            if(this->filter_discard[this->length-1-this->filter_search_start_pos] != c)
+                                this->filter_discard_done = true;
+                            else if(this->filter_discard[this->length-this->filter_search_start_pos] == 0) // end of filter - still matching
+                                this->state = State::waitingForNewLine;
+                        }
+                        if(this->state==State::filtering && this->filter_select_done && this->filter_discard_done)
+                           this->state = State::reading;
                     }
-                    if(this->state==State::filtering && this->filter_select_done && this->filter_discard_done)
-                       this->state = State::reading;
                 }
             }
             else
